@@ -1,51 +1,76 @@
-def gitBranch = env.BRANCH_NAME
-def gitURL = "git@github.com:Memphisdev/memphis.js.git"
-def repoUrlPrefix = "memphisos"
-
-node ("small-ec2-fleet") {
-  git credentialsId: 'main-github', url: gitURL, branch: gitBranch
-  if (env.BRANCH_NAME ==~ /(master)/) { 
-    versionTag = readFile "./version-beta.conf"
-  }
-  else {
-    versionTag = readFile "./version.conf"
+def versionTag
+pipeline {
+  environment {
+    gitBranch = "${env.BRANCH_NAME}"
+    gitURL = "git@github.com:Memphisdev/memphis-functions.js.git"
+    repoUrlPrefix = "memphisos"
   }
 
-  try{
-  
-    stage('Install NPM') {
-      sh """
-        sudo dnf install https://rpm.nodesource.com/pub_18.x/nodistro/repo/nodesource-release-nodistro-1.noarch.rpm -y
-        sudo dnf install nodejs -y --setopt=nodesource-nodejs.module_hotfixes=1
-        sudo dnf install -y /usr/bin/g++
-      """
+  agent {
+    label 'small-ec2-fleet'
+  }
+
+  stages {
+    stage ('Connect GIT repository') {
+      steps {
+        git credentialsId: 'main-github', url: "git@github.com:Memphisdev/memphis-functions.js.git", branch: "${env.gitBranch}" 
+      }
     }
 
-   stage('Push to NPM') {
-      if (env.BRANCH_NAME ==~ /(master)/) {
+    stage('Define version - BETA') {
+      when {branch 'master'}
+      steps {
+        script {
+          versionTag = readFile('./version-beta.conf')
+          sh """
+            sed -i -r "s/\\"memphis-functions/\\"memphis-functions-beta/g" ./package.json
+          """
+        }
+      }
+    }
+    stage('Define version - LATEST') {
+      when {branch 'latest'}
+      steps {
+        script {
+          versionTag = readFile('./version.conf')
+        }
+      }
+    }
+
+    stage('Install NPM') {
+      steps {
         sh """
-          sed -i -r "s/memphis-dev/memphis-dev-beta/g" ./package.json
+          sudo dnf install https://rpm.nodesource.com/pub_18.x/nodistro/repo/nodesource-release-nodistro-1.noarch.rpm -y
+          sudo dnf install nodejs -y --setopt=nodesource-nodejs.module_hotfixes=1
+          sudo dnf install -y /usr/bin/g++
         """
       }
-      sh """
+    }
+
+    stage('Push to NPM') {
+      steps {
+        sh """
         sed -i -r "s/version\\": \\"[0-9].[0-9].[0-9]/version\\": \\"$versionTag/g" ./package.json
         sudo npm install
       """
-      withCredentials([string(credentialsId: 'npm_token', variable: 'npm_token')]) {
-       sh "echo //registry.npmjs.org/:_authToken=$npm_token > .npmrc"
-       sh 'npm publish'
+        withCredentials([string(credentialsId: 'npm_token', variable: 'npm_token')]) {
+          sh """
+            echo //registry.npmjs.org/:_authToken=$npm_token > .npmrc
+            npm publish
+          """
+        }
       }
     }
-    
-    if (env.BRANCH_NAME ==~ /(latest)/) {
-      stage('Checkout to version branch'){
+
+    stage('Checkout to version branch') {
+      when {branch 'latest'}
+      steps {
         sh """
           sudo dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo -y
           sudo dnf install gh -y
           sudo dnf install jq -y
         """
         withCredentials([sshUserPrivateKey(keyFileVariable:'check',credentialsId: 'main-github')]) {
-          //sh "git reset --hard origin/latest"
           sh """
             GIT_SSH_COMMAND='ssh -i $check'  git checkout -b $versionTag
             GIT_SSH_COMMAND='ssh -i $check' git push --set-upstream origin $versionTag
@@ -58,31 +83,33 @@ node ("small-ec2-fleet") {
         }
       }
     }
-    
-    notifySuccessful()
 
-  } catch (e) {
-      currentBuild.result = "FAILED"
+  }
+  post {
+    always {
       cleanWs()
+    }
+    success {
+      notifySuccessful()
+    }
+    failure {
       notifyFailed()
-      throw e
+    }
   }
 }
-
 def notifySuccessful() {
-  emailext (
-      subject: "SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
-      body: """<p>SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
-        <p>Check console output at &QUOT;<a href='${env.BUILD_URL}'>${env.JOB_NAME} [${env.BUILD_NUMBER}]</a>&QUOT;</p>""",
-      recipientProviders: [[$class: 'DevelopersRecipientProvider']]
+    emailext (
+        subject: "SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
+        body: """SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':
+        Check console output and connection attributes at ${env.BUILD_URL}""",
+        recipientProviders: [requestor()]
     )
 }
-
 def notifyFailed() {
-  emailext (
-      subject: "FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
-      body: """<p>FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
-        <p>Check console output at &QUOT;<a href='${env.BUILD_URL}'>${env.JOB_NAME} [${env.BUILD_NUMBER}]</a>&QUOT;</p>""",
-      recipientProviders: [[$class: 'DevelopersRecipientProvider']]
+    emailext (
+        subject: "FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
+        body: """FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':
+        Check console output at ${env.BUILD_URL}""",
+        recipientProviders: [requestor()]
     )
 }
