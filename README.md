@@ -65,7 +65,7 @@ This example function takes the Uint8Array object `payload` and decodes it from 
 ```javascript
 const { memphis } = require("memphis-functions");
 
-export const handler = async (event) => {
+exports.handler = async (event) => {
     return await memphis.createFunction(event, eventHandler);
 };
 
@@ -86,7 +86,7 @@ A user created `eventHandler` may also be async:
 ```javascript
 const { memphis } = require("memphis-functions");
 
-export const handler = async (event) => {
+exports.handler = async (event) => {
     return await memphis.createFunction(event, eventHandler);
 };
 
@@ -107,7 +107,7 @@ If the user wants to have a message that they would like to validate and send to
 ```javascript
 const { memphis } = require("memphis-functions");
 
-export const handler = async (event) => {
+exports.handler = async (event) => {
     return await memphis.createFunction(event, eventHandler);
 };
 
@@ -131,7 +131,7 @@ If a user would rather just skip the message and not have it be sent to the stat
 ```javascript
 const { memphis } = require("memphis-functions");
 
-export const handler = async (event) => {
+exports.handler = async (event) => {
     return await memphis.createFunction(event, eventHandler);
 };
 
@@ -166,7 +166,7 @@ We can decode this and get the data_field out like this:
 ```javascript
 const { memphis } = require("memphis-functions");
 
-export const handler = async (event) => {
+exports.handler = async (event) => {
     return await memphis.createFunction(event, eventHandler);
 };
 
