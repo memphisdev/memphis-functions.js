@@ -97,7 +97,7 @@ async function createFunction(memphis_event, eventHandler) {
         }
 
         try {
-            return JSON.stringify(processedEvents);
+            return processedEvents;
         } catch (e) {
             return `Returned message types from user function are not able to be converted into JSON: ${e}`;
         }
