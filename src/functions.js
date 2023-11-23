@@ -106,6 +106,8 @@ async function createFunction(memphis_event, eventHandler) {
     return handler(memphis_event);
 };
 
-export const memphis = {
+const memphis = {
     createFunction
 };
+
+module.exports = { memphis };
