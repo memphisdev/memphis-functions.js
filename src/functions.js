@@ -61,7 +61,7 @@ async function createFunction(memphis_event, eventHandler) {
         for (const message of memphis_event.messages) {
             try {
                 const payload = Buffer.from(message.payload, 'base64');
-                const maybeAsyncEvent = eventHandler(payload, message.headers, message.inputs);
+                const maybeAsyncEvent = eventHandler(payload, message.headers, memphis_event.inputs);
 
                 let processedMessage, processedHeaders;
                 if (maybeAsyncEvent instanceof Promise) {
