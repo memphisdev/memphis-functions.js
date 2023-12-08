@@ -21,12 +21,13 @@
  * The event handler is assumed to have a function signature of: <eventHandler>(payload, headers, inputs) and should return an object that has the keys { processedMessage, processedHeaders }.
  * The payload will be given as an uint8array. The headers and inputs are both objects. 
  * processedMessage should be returned as an uint8array and processedHeaders as an object. 
+ * @param {boolean} as_json - If set to true, the payload will be passed as a JSON object instead of a byte array
  * @returns {string} - A JSON string representing the successful and failed messages.
  * The return format is given in the JSDOC of the handler function
  * @throws {Error} - Throws an exception if something goes wrong with processing a message.
  * @throws {Error} - Throws an exception if the returned processedMessage or processedHeaders are not in the expected format.
  */
-async function createFunction(memphis_event, eventHandler) {
+async function createFunction(memphis_event, eventHandler, as_json = false) {
     /**
      * The Memphis function handler which iterates over the messages in the event and passes them to the user-provided event handler.
      *
@@ -60,7 +61,11 @@ async function createFunction(memphis_event, eventHandler) {
 
         for (const message of memphis_event.messages) {
             try {
-                const payload = Buffer.from(message.payload, 'base64');
+                let payload = Buffer.from(message.payload, 'base64');
+                if (as_json){
+                    const decodedPayload = payload.toString('utf-8');
+                    payload = JSON.parse(decodedPayload);
+                }
                 const maybeAsyncEvent = eventHandler(payload, message.headers, memphis_event.inputs);
 
                 let processedMessage, processedHeaders;

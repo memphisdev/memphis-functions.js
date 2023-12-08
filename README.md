@@ -102,6 +102,25 @@ async function eventHandler(payload, headers, inputs) {
 }
 ```
 
+The `as_json` can be used to get a json payload instead of a `Uint8Array`:
+
+```javascript
+const { memphis } = require("memphis-functions");
+
+exports.handler = async (event) => {
+    return await memphis.createFunction(event, eventHandler);
+};
+
+async function eventHandler(payload, headers, inputs) {
+    payload["modified"] = true;
+
+    return {
+        processedMessage: Buffer.from(JSON.stringify(payload), 'utf-8'),
+        processedHeaders: headers
+    };
+}
+```
+
 If the user wants to have a message that they would like to validate and send to the dead letter station if the validation fails, then the user can throw an exception. In the following example, the field `check` is a boolean. The following function will send any messages that fail the `check` to the dead letter station.
 
 ```javascript
