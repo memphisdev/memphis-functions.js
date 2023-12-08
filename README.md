@@ -108,7 +108,7 @@ The `as_json` can be used to get a json payload instead of a `Uint8Array`:
 const { memphis } = require("memphis-functions");
 
 exports.handler = async (event) => {
-    return await memphis.createFunction(event, eventHandler);
+    return await memphis.createFunction(event, eventHandler, as_json = true);
 };
 
 async function eventHandler(payload, headers, inputs) {
