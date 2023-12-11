@@ -1,7 +1,7 @@
 {
   "name": "memphis-functions",
   "version": "1.0.4",
-  "description": "",
+  "description": "Utility for writing Memphis functions. Memphis is a powerful messaging platform for modern developers",
   "main": "src/functions.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
