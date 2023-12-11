@@ -1,7 +1,7 @@
 /**
  * This function creates a Memphis function and processes events with the passed-in event handler function.
  *
- * @param {Object} memphis_event - A Memphis event object containing messages and inputs.
+ * @param {Object} memphisEvent - A Memphis event object containing messages and inputs.
  * @example
  * // Example Memphis event object
  * {
@@ -21,17 +21,17 @@
  * The event handler is assumed to have a function signature of: <eventHandler>(payload, headers, inputs) and should return an object that has the keys { processedMessage, processedHeaders }.
  * The payload will be given as an uint8array. The headers and inputs are both objects. 
  * processedMessage should be returned as an uint8array and processedHeaders as an object. 
- * @param {boolean} as_json - If set to true, the payload will be passed as a JSON object instead of a byte array
+ * @param {boolean} asJson - If set to true, the payload will be passed as a JSON object instead of a byte array
  * @returns {string} - A JSON string representing the successful and failed messages.
  * The return format is given in the JSDOC of the handler function
  * @throws {Error} - Throws an exception if something goes wrong with processing a message.
  * @throws {Error} - Throws an exception if the returned processedMessage or processedHeaders are not in the expected format.
  */
-async function createFunction(memphis_event, eventHandler, as_json = false) {
+async function createFunction(memphisEvent, eventHandler, asJson = false) {
     /**
      * The Memphis function handler which iterates over the messages in the event and passes them to the user-provided event handler.
      *
-     * @param {Object} memphis_event - A Memphis event object containing messages and inputs.
+     * @param {Object} memphisEvent - A Memphis event object containing messages and inputs.
      * @returns {string} - A JSON string representing the successful and failed messages. 
      * @example
      * // Example result format (successful and failed messages)
@@ -53,20 +53,20 @@ async function createFunction(memphis_event, eventHandler, as_json = false) {
      *     ]
      * }
      */
-    async function handler(memphis_event) {
+    async function handler(memphisEvent) {
         const processedEvents = {
             messages: [],
             failed_messages: []
         };
 
-        for (const message of memphis_event.messages) {
+        for (const message of memphisEvent.messages) {
             try {
                 let payload = Buffer.from(message.payload, 'base64');
-                if (as_json){
+                if (asJson){
                     const decodedPayload = payload.toString('utf-8');
                     payload = JSON.parse(decodedPayload);
                 }
-                const maybeAsyncEvent = eventHandler(payload, message.headers, memphis_event.inputs);
+                const maybeAsyncEvent = eventHandler(payload, message.headers, memphisEvent.inputs);
 
                 let processedMessage, processedHeaders;
                 if (maybeAsyncEvent instanceof Promise) {
@@ -78,7 +78,7 @@ async function createFunction(memphis_event, eventHandler, as_json = false) {
                     processedHeaders = maybeAsyncEvent.processedHeaders;
                 }
 
-                if (as_json){
+                if (asJson){
                     processedMessage = Buffer.from(JSON.stringify(processedMessage), 'utf-8')
                 }
 
@@ -112,7 +112,7 @@ async function createFunction(memphis_event, eventHandler, as_json = false) {
         }
     }
 
-    return handler(memphis_event);
+    return handler(memphisEvent);
 };
 
 const memphis = {
