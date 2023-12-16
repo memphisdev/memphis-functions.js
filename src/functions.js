@@ -88,7 +88,8 @@ async function createFunction(memphisEvent, eventHandler, asJson = false) {
                         payload: Buffer.from(processedMessage).toString('base64')
                     });
                 } else {
-                    const errMsg = "The returned processedMessage or processedHeaders were not in the right format. processedMessage must be Uint8Array and processedHeaders, Object";
+                    const errMsg = `The returned processedMessage or processedHeaders were not in the right format. processedMessage must be Uint8Array and processedHeaders, Object
+processedMessage is of type ${typeof(processedMessage)} and processedHeaders is of type ${typeof(processedHeaders)}`;
                     throw new Error(errMsg);
                 }
                 
