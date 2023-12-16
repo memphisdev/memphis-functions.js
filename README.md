@@ -102,7 +102,7 @@ async function eventHandler(payload, headers, inputs) {
 }
 ```
 
-The `as_json` can be used to get a json payload instead of a `Uint8Array`:
+The `asJson` can be used to get a json payload instead of a `Uint8Array`:
 
 ```javascript
 const { memphis } = require("memphis-functions");

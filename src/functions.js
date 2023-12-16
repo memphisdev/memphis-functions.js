@@ -62,7 +62,7 @@ async function createFunction(memphisEvent, eventHandler, asJson = false) {
         for (const message of memphisEvent.messages) {
             try {
                 let payload = Buffer.from(message.payload, 'base64');
-                if (asJson){
+                if (asJson) {
                     const decodedPayload = payload.toString('utf-8');
                     payload = JSON.parse(decodedPayload);
                 }
@@ -78,7 +78,7 @@ async function createFunction(memphisEvent, eventHandler, asJson = false) {
                     processedHeaders = maybeAsyncEvent.processedHeaders;
                 }
 
-                if (asJson){
+                if (asJson) {
                     processedMessage = Buffer.from(JSON.stringify(processedMessage), 'utf-8')
                 }
 
