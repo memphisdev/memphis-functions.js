@@ -79,7 +79,7 @@ async function createFunction(memphisEvent, eventHandler, asJson = false) {
                 }
 
                 if (asJson) {
-                    processedMessage = Buffer.from(JSON.stringify(processedMessage), 'utf-8')
+                    processedMessage = Buffer.from(JSON.stringify(processedMessage), 'utf-8');
                 }
 
                 if (processedMessage instanceof Uint8Array && processedHeaders instanceof Object) {
@@ -87,15 +87,14 @@ async function createFunction(memphisEvent, eventHandler, asJson = false) {
                         headers: processedHeaders,
                         payload: Buffer.from(processedMessage).toString('base64')
                     });
-                } else if (processedMessage === null && processedHeaders === null) {
+                } else if (processedMessage === null && processedHeaders === null ) {
                     continue;
-                } else if (processedMessage === null || processedHeaders === null) {
-                    const errMsg = `processedMessage is of type ${typeof processedMessage} and processedHeaders is ${typeof processedHeaders}. Either both of these should be null or neither`;
-                    throw new Error(errMsg);
                 } else {
-                    const errMsg = "The returned processedMessage or processedHeaders were not in the right format. processedMessage must be Uint8Array and processedHeaders, Object";
+                    const errMsg = `The returned processedMessage or processedHeaders were not in the right format. processedMessage must be Uint8Array and processedHeaders, Object
+processedMessage is of type ${typeof(processedMessage)} and processedHeaders is of type ${typeof(processedHeaders)}`;
                     throw new Error(errMsg);
                 }
+                
             } catch (e) {
                 processedEvents.failed_messages.push({
                     headers: message.headers,
