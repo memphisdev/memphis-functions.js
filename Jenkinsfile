@@ -7,7 +7,7 @@ pipeline {
   }
 
   agent {
-    label 'small-ec2-fleet'
+    label 'memphis-jenkins-small-fleet-agent'
   }
 
   stages {
