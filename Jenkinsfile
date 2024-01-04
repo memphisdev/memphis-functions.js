@@ -18,7 +18,7 @@ pipeline {
     }
 
     stage('Define version - BETA') {
-      when {branch 'change-jenkins-agent'}
+      when {branch 'master'}
       steps {
         script {
           versionTag = readFile('./version-beta.conf')
